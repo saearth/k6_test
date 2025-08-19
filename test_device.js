@@ -6,19 +6,19 @@ const BASE_URL = 'https://aliza.kudsonmoo.co/api/v1';
 
 export const options = {
 
-    //     vus: 10000, // Virtual Users
-    //     duration: '10s', // ระยะเวลาทดสอบ
-    interaction: 10,    //วนลูปทดสอบ
+        vus: 10000, // Virtual Users
+        duration: '10s', // ระยะเวลาทดสอบ
+    // interaction: 10,    //วนลูปทดสอบ
 
     //ทดสอบตามเวลาใน array
-    stages: [
-        { duration: '10s', target: 0 },
-        { duration: '10s', target: 10 }, //เพิ่มจาก 0 เป็น 10,000 VUs ภายใน 10 วินาที
-        { duration: '10s', target: 100 },  //ลดจาก 10,000 เป็น 1,000 VUs ภายใน 10 วินาที
-        { duration: '10s', target: 1000 },
-        { duration: '10s', target: 10000 },
-        { duration: '10s', target: 0 },
-    ],
+    // stages: [
+    //     { duration: '10s', target: 0 },
+    //     { duration: '10s', target: 10 }, //เพิ่มจาก 0 เป็น 10,000 VUs ภายใน 10 วินาที
+    //     { duration: '10s', target: 100 },  //ลดจาก 10,000 เป็น 1,000 VUs ภายใน 10 วินาที
+    //     { duration: '10s', target: 1000 },
+    //     { duration: '10s', target: 10000 },
+    //     { duration: '10s', target: 0 },
+    // ],
 };
 
 export default function () {

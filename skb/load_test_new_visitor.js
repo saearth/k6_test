@@ -6,12 +6,13 @@ const imgData = open('./test_pic.jpg', 'b');
 export const options = {
     // vus: 1, // Virtual Users
     // duration: '10s', // ระยะเวลาทดสอบ
+    // iterations: 10, //loop 10 times
 
     // ทดสอบตามเวลาใน array
     stages: [
         { duration: '10s', target: 0 },
-        { duration: '10s', target: 1 }, //เพิ่มจาก 0 เป็น 10,000 VUs ภายใน 10 วินาที
-        { duration: '10s', target: 5 },  //ลดจาก 10,000 เป็น 1,000 VUs ภายใน 10 วินาที
+        { duration: '10s', target: 1 },
+        { duration: '10s', target: 5 }, 
         { duration: '10s', target: 10 },
         { duration: '10s', target: 5 },
         { duration: '10s', target: 0 },
