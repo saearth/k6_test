@@ -1,14 +1,21 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { generateRandomString } from './randomString.js';
-import { getRandomItemFromArray } from './randomArr.js';
+import { generateRandomString } from '../randomString.js';
+import { getRandomItemFromArray } from '../randomArr.js';
 import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js";
-import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
 
 export const options = {
 
-    vus: 1, // Virtual Users
-    // duration: '10s', // ระยะเวลาทดสอบ
+    vus: 100, // Virtual Users
+    duration: '10s', // ระยะเวลาทดสอบ
+
+    // iterations: 10, // บังคับให้จบเป็นรอบ
+
+    // maxDuration: "2m", // กันเหตุรอบนานเกิน
+
+    // scenarios: {
+    //     s1: { executor: 'per-vu-iterations', vus: 5, iterations: 10 } // รวมทั้งหมด 50 รอบ
+    // }
 
     //ทดสอบตามเวลาใน array
     // stages: [
@@ -24,16 +31,18 @@ export const options = {
 export default function () {
 
     // Login เพื่อรับ access_token และ refresh_token
-    const url = 'https://aliza.kudsonmoo.co/api/v1/auth/signin';
+    const url = 'https://policeinnopolis-p6.k-lynx.com/api/v1/auth/signin';
 
     const payload = JSON.stringify({
+        hwId: '',
         username: 'admin',
-        password: 'iglnJqXs2Kevx2G0',
+        password: 'CogvCt69EYVk',
     });
 
     const params = {
         headers: {
             'Content-Type': 'application/json',
+            'accept': 'application/json',
         },
     };
 
@@ -47,11 +56,26 @@ export default function () {
     console.log('Refresh Token:', refreshToken);
 
     check(loginRes, {
-        'POST /signin status is 200': (r) => r.status === 200,
+        'POST /auth/signin status is 200': (r) => r.status === 200,
         // 'access_token exists': () => accessToken !== undefined,
         // 'refresh_token exists': () => refreshToken !== undefined,
     });
 
+    // Login เพื่อรับ access_token และ refresh_token
+    const url_verify = 'https://policeinnopolis-p6.k-lynx.com/api/v1/auth/introspect';
+
+    const headers_verify = {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+        },
+    };
+
+    const verifyRes = http.get(url_verify, headers_verify)
+    console.log('Verify Response:', verifyRes);
+
+    check(verifyRes, {
+        'GET /auth/introspect status is 200': (r) => r.status === 200,
+    });
     // // เรียก refresh_token API ด้วย refresh_token ที่ได้
     // if (refreshToken) {
     //     const refreshUrl = 'https://aliza.kudsonmoo.co/api/v1/auth/refreshToken'; // เปลี่ยนให้ตรง API จริง
@@ -84,9 +108,9 @@ export default function () {
             },
         };
 
-        const devicesUrl = 'https://aliza.kudsonmoo.co/api/v1/devices';
+        const devicesUrl = 'https://policeinnopolis-p6.k-lynx.com/api/v1/devices';
         const DeviceRes = http.get(devicesUrl, headers);
-        console.log('Device response:', DeviceRes.body);
+        console.log('Device response:', DeviceRes);
         check(DeviceRes, {
             'GET /devices - status 200': (r) => r.status === 200,
         });
@@ -107,12 +131,36 @@ export default function () {
             "user": "" + generateRandomString(8, { includeSpecialChars: false }),
         });
         const createDevicesRes = http.post(devicesUrl, devicesPayload, headers);
-        console.log('Device response:', createDevicesRes.body);
+        console.log('Create device response:', createDevicesRes.body);
         check(createDevicesRes, {
             'POST /devices status is 201': (r) => r.status === 201,
         });
 
-        const kcontrolUrl = 'https://aliza.kudsonmoo.co/api/v1/kcontrol';
+        const groupsUrl = 'https://policeinnopolis-p6.k-lynx.com/api/v1/groups';
+        const groupsRes = http.get(groupsUrl, headers);
+        console.log('Groups response:', groupsRes.body);
+        check(groupsRes, {
+            'GET /groups is 200': (r) => r.status === 200,
+        })
+
+        // const groupsPayload = JSON.stringify({
+        //     "hwId": "64:B7:08:2B:C6:1B",
+        //     "message": message,
+        //     "setAlarmInterval": 1000,
+        //     "setHealthInterval": 5000,
+        //     "setOutput": "OUT_1",
+        //     "timestamp": timestamp,
+        //     "topic": "kcontrol-control",
+        //     "type": "ONCE"
+        // });
+        // const groupsSendRes = http.post(kcontrolUrl, kcontrolPayload, headers);
+        // console.log('Kcontrol payload:', kcontrolPayload);
+        // console.log('Kcontrol response:', kcontrolSendRes.body);
+        // check(kcontrolSendRes, {
+        //     'POST /kcontrol Send status is 200': (r) => r.status === 200,
+        // });
+
+        const kcontrolUrl = 'https://policeinnopolis-p6.k-lynx.com/api/v1/kcontrol';
         const kcontrolRes = http.get(kcontrolUrl, headers);
         console.log('Kcontrol response:', kcontrolRes.body);
         check(kcontrolRes, {
@@ -145,28 +193,28 @@ export default function () {
             'POST /kcontrol Send status is 200': (r) => r.status === 200,
         });
 
-        const kcontrolAlarmUrl = 'https://aliza.kudsonmoo.co/api/v1/kcontrol/alarms'
+        const kcontrolAlarmUrl = 'https://policeinnopolis-p6.k-lynx.com/api/v1/kcontrol/alarms'
         const kcontrolAlarmRes = http.get(kcontrolAlarmUrl, headers);
         console.log('Kcontrol Alarm response:', kcontrolAlarmRes.body);
         check(kcontrolAlarmRes, {
             'GET /kcontrol/alarms status is 200': (r) => r.status === 200,
         });
 
-        const mapsUrl = 'https://aliza.kudsonmoo.co/api/v1/maps/kml'
+        const mapsUrl = 'https://policeinnopolis-p6.k-lynx.com/api/v1/maps/kml'
         const mapsRes = http.get(mapsUrl, headers);
         console.log('Maps response:', mapsRes.body);
         check(mapsRes, {
             'GET /maps/kml status is 200': (r) => r.status === 200,
         });
 
-        const usersUrl = 'https://aliza.kudsonmoo.co/api/v1/users'
+        const usersUrl = 'https://policeinnopolis-p6.k-lynx.com/api/v1/users'
         const usersRes = http.get(usersUrl, headers);
         console.log('Users response:', usersRes.body);
         check(usersRes, {
             'GET /users status is 200': (r) => r.status === 200,
         });
 
-        const logoutUrl = 'https://aliza.kudsonmoo.co/api/v1/auth/signout';
+        const logoutUrl = 'https://policeinnopolis-p6.k-lynx.com/api/v1/auth/signout';
         const logoutRes = http.post(logoutUrl, null, headers);
         console.log('Logout response:', logoutRes.body);
         check(logoutRes, {
@@ -174,18 +222,11 @@ export default function () {
         });
     }
 
-    sleep(3);
+    sleep(0.5);
 }
 
-// export function handleSummary(data) {
-//     return {
-//         "report.html": htmlReport(data), // export เป็นไฟล์ HTML
-//     };
-// }
-
 export function handleSummary(data) {
-  return {
-    stdout: textSummary(data, { indent: " ", enableColors: true }), // print ออก console
-    "summary.txt": textSummary(data), // บันทึกเป็นไฟล์ text
-  };
+    return {
+        "report.html": htmlReport(data), // export เป็นไฟล์ HTML
+    };
 }
