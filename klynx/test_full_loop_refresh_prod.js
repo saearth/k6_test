@@ -218,7 +218,7 @@ export default function () {
         const logoutRes = http.post(logoutUrl, null, headers);
         console.log('Logout response:', logoutRes.body);
         check(logoutRes, {
-            'POST /signout status is 200': (r) => r.status === 200,
+            'POST /auth/signout status is 200': (r) => r.status === 200,
         });
     }
 
